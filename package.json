@@ -7,8 +7,7 @@
   "license": "UNLICENCED",
   "contributors": [],
   "scripts": {
-    "start": "ts-node ./src/main.ts",
-    "ping": "ts-node ./src/ping.ts"
+    "start": "ts-node ./src/main.ts"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
