@@ -85,8 +85,6 @@ async function checkTownDifferences(currentList: TownInfo[]) {
             ((BigInt(b.x) + BigInt(30000000)) * BigInt(60000000) + BigInt(b.z))
         )
       );
-    console.log(all);
-
     // rename = 2 towns on same position in same tick
     const renamed = new Set<string>();
     for (let i = 1; i < all.length; ++i) {
