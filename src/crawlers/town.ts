@@ -97,7 +97,7 @@ async function checkTownDifferences(currentList: TownInfo[]) {
         const { name: next } = ordered ? b : a;
         await notifyCoord(
           "Town Renamed",
-          `Town "${prev}" has been renamed to ${next}.`,
+          `Town "${prev}" has been renamed to \"${next}\".`,
           0xffff00,
           a
         );
