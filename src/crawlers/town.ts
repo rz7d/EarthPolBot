@@ -1,10 +1,9 @@
+import { log } from "src/log";
 import {
   debug,
   get,
   NamedCoordDictionary,
   NamedCoordInfo,
-  notifyCoord,
-  setOf,
   vec2,
 } from "../core";
 import { notify } from "../discord";
@@ -43,6 +42,32 @@ function tooltipToName(tooltip: string): string {
     .replaceAll("\u003c/bold\u003e\r\n\u003c/div\u003e\r\n", "");
 }
 
+async function notifyCoord(
+  title: string,
+  description: string,
+  color: number,
+  { x, z }: vec2
+) {
+  await log(`${title}: ${description} ${x} ${z}`);
+  return await notify({
+    title,
+    description,
+    color,
+    fields: [
+      {
+        name: "X Pos",
+        value: `${x}`,
+        inline: true,
+      },
+      {
+        name: "Z Pos",
+        value: `${z}`,
+        inline: true,
+      },
+    ],
+  });
+}
+
 async function checkTownDifferences(currentList: TownInfo[]) {
   const previousList = await load<TownInfo[]>(PRESISTENT_FILE);
   if (previousList) {
@@ -51,9 +76,43 @@ async function checkTownDifferences(currentList: TownInfo[]) {
     currentList?.forEach(({ name, x, z }) => (currentDict[name] = { x, z }));
     previousList?.forEach(({ name, x, z }) => (previousDict[name] = { x, z }));
 
-    const all = setOf(previousList, currentList);
+    const all = previousList
+      .concat(currentList)
+      .sort((a, b) =>
+        Number(
+          (BigInt(a.x) + BigInt(30000000)) * BigInt(60000000) +
+            BigInt(a.z) -
+            ((BigInt(b.x) + BigInt(30000000)) * BigInt(60000000) + BigInt(b.z))
+        )
+      );
+    console.log(all);
+
+    // rename = 2 towns on same position in same tick
+    const renamed = new Set<string>();
+    for (let i = 1; i < all.length; ++i) {
+      const a = all[i - 1];
+      const b = all[i];
+
+      if (a.x === b.x && a.z === b.z && a.name !== b.name) {
+        const ordered = a.name in previousDict;
+        const { name: prev } = ordered ? a : b;
+        const { name: next } = ordered ? b : a;
+        await notifyCoord(
+          "Town Renamed",
+          `Town "${prev}" has been renamed to ${next}.`,
+          0xffff00,
+          a
+        );
+        renamed.add(prev);
+        renamed.add(next);
+      }
+    }
+
     for (const town of all) {
       const { name } = town;
+      if (renamed.has(name)) {
+        continue;
+      }
       if (!(name in previousDict)) {
         await notifyCoord(
           "Town Created",
@@ -63,8 +122,8 @@ async function checkTownDifferences(currentList: TownInfo[]) {
         );
       } else if (!(name in currentDict)) {
         await notifyCoord(
-          "Town Deleted",
-          `Town "${name}" has been deleted.`,
+          "Town Abandoned",
+          `Town "${name}" has been abandoned.`,
           0xff0000,
           town
         );
