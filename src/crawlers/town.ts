@@ -1,4 +1,3 @@
-import { log } from "src/log";
 import {
   debug,
   get,
@@ -6,6 +5,7 @@ import {
   NamedCoordInfo,
   vec2,
 } from "../core";
+import { log } from "../log";
 import { notify } from "../discord";
 import { load, save } from "../presistent";
 

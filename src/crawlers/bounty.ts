@@ -6,10 +6,10 @@ import {
   setOf,
   vec2,
 } from "../core";
+import { log } from "../log";
 import { notify } from "../discord";
 import { load, save } from "../presistent";
 import * as config from "../../config.json";
-import { log } from "src/log";
 
 const ENDPOINT = "https://earthpol.com/altmap/tiles/players.json";
 const PERSISTENT_FILE = "logged_in_bounties.json";
