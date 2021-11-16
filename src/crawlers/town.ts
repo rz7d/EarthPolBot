@@ -6,7 +6,7 @@ import {
   vec2,
 } from "../core";
 import { log } from "../log";
-import { notify } from "../discord";
+import { sendEmbed } from "../discord";
 import { load, save } from "../presistent";
 
 const ENDPOINT = "https://earthpol.com/altmap/tiles/world/markers.json";
@@ -49,7 +49,7 @@ async function notifyCoord(
   { x, z }: vec2
 ) {
   await log(`${title}: ${description} ${x} ${z}`);
-  return await notify({
+  return await sendEmbed({
     title,
     description,
     color,

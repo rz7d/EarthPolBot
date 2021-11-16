@@ -1,12 +1,7 @@
 import * as config from "../config.json";
+import { delay } from "./core";
 import { pollBounty } from "./crawlers/bounty";
 import { pollTown } from "./crawlers/town";
-
-async function delay(millis: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, millis);
-  });
-}
 
 async function watch(func: Function, interval: number): Promise<never> {
   for (;;) {

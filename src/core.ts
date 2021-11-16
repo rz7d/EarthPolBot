@@ -11,6 +11,12 @@ export interface NamedCoordInfo extends vec2 {
 
 export type NamedCoordDictionary = { [k: string]: vec2 };
 
+export async function delay(millis: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, millis);
+  });
+}
+
 export async function get<T>(url: string): Promise<AxiosResponse<T>> {
   return await axios({
     method: "GET",

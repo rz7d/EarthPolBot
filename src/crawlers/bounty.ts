@@ -7,7 +7,7 @@ import {
   vec2,
 } from "../core";
 import { log } from "../log";
-import { notify } from "../discord";
+import { sendEmbed } from "../discord";
 import { load, save } from "../presistent";
 import * as config from "../../config.json";
 
@@ -42,7 +42,7 @@ async function notifyPlayer(
   { x, z }: vec2
 ) {
   await log(`${title}: ${description} ${x} ${z}`);
-  return await notify({
+  return await sendEmbed({
     title,
     thumbnail: {
       url: thumbnail,
