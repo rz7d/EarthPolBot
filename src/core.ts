@@ -1,6 +1,4 @@
 import axios, { AxiosResponse } from "axios";
-import { notify } from "./discord";
-import { log } from "./log";
 
 export interface vec2 {
   x: number;
@@ -34,30 +32,4 @@ export function setOf<T>(a: T[], b: T[]): Set<T> {
 
 export function debug(message: any) {
   // console.debug(message);
-}
-
-export async function notifyCoord(
-  title: string,
-  description: string,
-  color: number,
-  { x, z }: vec2
-) {
-  await log(`${title}: ${description} ${x} ${z}`);
-  return await notify({
-    title,
-    description,
-    color,
-    fields: [
-      {
-        name: "X Pos",
-        value: `${x}`,
-        inline: true,
-      },
-      {
-        name: "Z Pos",
-        value: `${z}`,
-        inline: true,
-      },
-    ],
-  });
 }

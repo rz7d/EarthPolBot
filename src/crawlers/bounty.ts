@@ -3,12 +3,13 @@ import {
   get,
   NamedCoordDictionary,
   NamedCoordInfo,
-  notifyCoord,
   setOf,
+  vec2,
 } from "../core";
 import { notify } from "../discord";
 import { load, save } from "../presistent";
 import * as config from "../../config.json";
+import { log } from "src/log";
 
 const ENDPOINT = "https://earthpol.com/altmap/tiles/players.json";
 const PERSISTENT_FILE = "logged_in_bounties.json";
@@ -29,7 +30,37 @@ interface Player {
   yaw: number;
 }
 
-type PlayerInfo = NamedCoordInfo;
+interface PlayerInfo extends NamedCoordInfo {
+  uuid: string;
+}
+
+async function notifyPlayer(
+  title: string,
+  thumbnail: string,
+  description: string,
+  color: number,
+  { x, z }: vec2
+) {
+  await log(`${title}: ${description} ${x} ${z}`);
+  return await notify({
+    title,
+    thumbnail,
+    description,
+    color,
+    fields: [
+      {
+        name: "X Pos",
+        value: `${x}`,
+        inline: true,
+      },
+      {
+        name: "Z Pos",
+        value: `${z}`,
+        inline: true,
+      },
+    ],
+  });
+}
 
 async function checkPlayerDifferences(currentList: PlayerInfo[]) {
   const previousList = await load<PlayerInfo[]>(PERSISTENT_FILE);
@@ -41,14 +72,26 @@ async function checkPlayerDifferences(currentList: PlayerInfo[]) {
 
     const all = setOf(previousList, currentList);
     for (const player of all) {
-      const { name, x, z } = player;
+      const { name, x, z, uuid } = player;
       if (!config.bounty.includes(name)) {
         continue;
       }
       if (!(name in previousDict)) {
-        await notifyCoord("Logged In", name, 0x00ff00, player);
+        await notifyPlayer(
+          "Logged In",
+          `https://crafatar.com/avatars/${uuid}`,
+          name,
+          0x00ff00,
+          player
+        );
       } else if (!(name in currentDict)) {
-        await notifyCoord("Logged Out", name, 0xff0000, player);
+        await notifyPlayer(
+          "Logged Out",
+          `https://crafatar.com/avatars/${uuid}`,
+          name,
+          0xff0000,
+          player
+        );
       }
     }
   }
