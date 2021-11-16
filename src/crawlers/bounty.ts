@@ -44,6 +44,7 @@ async function notifyPlayer(
   await log(`${title}: ${description} ${x} ${z}`);
   return await sendEmbed({
     title,
+    url: `https://earthpol.com/altmap/?zoom=8&x=${x}&z=${z}`,
     thumbnail: {
       url: thumbnail,
       height: 150,

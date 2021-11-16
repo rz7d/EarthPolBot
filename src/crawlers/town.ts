@@ -51,6 +51,7 @@ async function notifyCoord(
   await log(`${title}: ${description} ${x} ${z}`);
   return await sendEmbed({
     title,
+    url: `https://earthpol.com/altmap/?zoom=8&x=${x}&z=${z}`,
     description,
     color,
     fields: [
