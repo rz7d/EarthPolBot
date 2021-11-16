@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { notify } from "./discord";
+import { log } from "./log";
 
 export interface vec2 {
   x: number;
@@ -41,7 +42,7 @@ export async function notifyCoord(
   color: number,
   { x, z }: vec2
 ) {
-  console.log(`${title}: ${description} ${x} ${z}`);
+  await log(`${title}: ${description} ${x} ${z}`);
   return await notify({
     title,
     description,
