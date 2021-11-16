@@ -44,7 +44,11 @@ async function notifyPlayer(
   await log(`${title}: ${description} ${x} ${z}`);
   return await notify({
     title,
-    thumbnail,
+    thumbnail: {
+      url: thumbnail,
+      height: 150,
+      width: 150,
+    },
     description,
     color,
     fields: [
