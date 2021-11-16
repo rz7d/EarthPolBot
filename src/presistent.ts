@@ -1,6 +1,7 @@
 import { promises } from "fs";
+import * as config from "../config.json";
 
-const IN_MEMORY = true;
+const IN_MEMORY = !config.persistent;
 const IN_MEMORY_DATA: { [filename: string]: any } = {};
 
 export async function load<T>(filename: string): Promise<T | null> {

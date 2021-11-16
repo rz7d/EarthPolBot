@@ -1,0 +1,11 @@
+{
+  "interval": {
+    "town": 2000,
+    "bounty": 300
+  },
+  "webhook": {
+    "discord": "webhook url here"
+  },
+  "bounty": ["jeb_", "Dinnerbone"],
+  "persistent": true
+}
