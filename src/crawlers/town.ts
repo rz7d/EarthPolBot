@@ -36,6 +36,7 @@ interface Marker {
 
 type TownInfo = NamedCoordInfo;
 
+// ^\s*"tooltip"\s*:\s*"(\\r\\n\\u003cdiv\\u003e\\r\\n    \\u003cbold\\u003e(?<townname>.+)\\u003c\/bold\\u003e\\r\\n\\u003c\/div\\u003e\\r\\n)",$
 function tooltipToName(tooltip: string): string {
   return tooltip
     .replaceAll("\r\n\u003cdiv\u003e\r\n    \u003cbold\u003e", "")
