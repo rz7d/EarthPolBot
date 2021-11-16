@@ -11,7 +11,7 @@ export async function sendEmbed(embed: any): Promise<AxiosResponse<any>> {
     },
     data: JSON.stringify({
       username: "EarthPol Bot",
-      avater_url: "https://rz7d.vercel.app/earthpol-recipes/logo.png",
+      avatar_url: "https://rz7d.vercel.app/earthpol-recipes/logo.png",
       embeds: [embed],
     }),
   });
