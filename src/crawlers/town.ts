@@ -90,7 +90,7 @@ async function checkTownDifferences(currentList: TownInfo[]) {
 
     // rename = 2 towns on same position in same tick
     const renamed = new Set<string>();
-    let listsAreNotChanged = true;
+    let listsAreNotChanged = sameSize;
 
     // eslint-disable-next-line no-plusplus
     for (let i = 1; i < all.length; ++i) {
