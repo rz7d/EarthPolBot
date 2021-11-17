@@ -7,17 +7,25 @@
   "license": "UNLICENCED",
   "contributors": [],
   "scripts": {
-    "start": "ts-node ./src/main.ts"
+    "start": "ts-node ./src/main.ts",
+    "lint": "eslint src --ext .ts --fix"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
     "@types/node": "^16.11.6",
     "@types/webpack": "^5.28.0",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint": "^8.2.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.25.3",
+    "prettier": "^2.4.1",
     "ts-node": "^10.4.0",
-    "webpack": "^5.61.0"
+    "webpack": "^5.61.0",
+    "typescript": "^4.4.4"
   },
   "dependencies": {
-    "axios": "^0.24.0",
-    "typescript": "^4.4.4"
+    "axios": "^0.24.0"
   }
 }

@@ -1,23 +1,11 @@
-import {
-  debug,
-  get,
-  NamedCoordDictionary,
-  NamedCoordInfo,
-  setOf,
-  vec2,
-} from "../core";
-import { log } from "../log";
+import { debug, delay, get, NamedCoordInfo, vec2 } from "../core";
+import log from "../log";
 import { sendEmbed } from "../discord";
-import { load, save } from "../presistent";
+import { load, save } from "../persistent";
 import * as config from "../../config.json";
 
 const ENDPOINT = "https://earthpol.com/altmap/tiles/players.json";
 const PERSISTENT_FILE = "logged_in_bounties.json";
-
-interface PlayerList {
-  max: number;
-  players: Player[];
-}
 
 interface Player {
   world: string;
@@ -30,18 +18,22 @@ interface Player {
   yaw: number;
 }
 
+interface PlayerList {
+  max: number;
+  players: Player[];
+}
+
 interface PlayerInfo extends NamedCoordInfo {
   uuid: string;
 }
 
-async function notifyPlayer(
+function notifyPlayer(
   title: string,
   thumbnail: string,
   description: string,
   color: number,
   { x, z }: vec2
 ) {
-  // no-await
   log(`${title}: ${description} ${x} ${z}`);
   sendEmbed({
     title,
@@ -69,39 +61,41 @@ async function notifyPlayer(
 }
 
 async function checkPlayerDifferences(currentList: PlayerInfo[]) {
-  const previousList = await load<PlayerInfo[]>(PERSISTENT_FILE);
+  const previousList = await load<PlayerInfo[]>("bounty", PERSISTENT_FILE);
   if (previousList) {
-    const currentDict: NamedCoordDictionary = {};
-    const previousDict: NamedCoordDictionary = {};
-    currentList?.forEach(({ name, x, z }) => (currentDict[name] = { x, z }));
-    previousList?.forEach(({ name, x, z }) => (previousDict[name] = { x, z }));
-
-    const all = setOf(previousList, currentList);
+    const currentNames = currentList?.reduce<Set<string>>(
+      (set, { name }) => set.add(name),
+      new Set()
+    );
+    const previousNames = previousList?.reduce<Set<string>>(
+      (set, { name }) => set.add(name),
+      new Set()
+    );
+    const all = previousList.concat(currentList);
     for (const player of all) {
-      const { name, x, z, uuid } = player;
-      if (!config.bounty.includes(name)) {
-        continue;
-      }
-      if (!(name in previousDict)) {
-        await notifyPlayer(
-          "Logged In",
-          `https://crafatar.com/avatars/${uuid}`,
-          name,
-          0x00ff00,
-          player
-        );
-      } else if (!(name in currentDict)) {
-        await notifyPlayer(
-          "Logged Out",
-          `https://crafatar.com/avatars/${uuid}`,
-          name,
-          0xff0000,
-          player
-        );
+      const { name, uuid } = player;
+      if (config.bounty.targets.includes(name)) {
+        if (!previousNames.has(name)) {
+          notifyPlayer(
+            "Logged In",
+            `https://crafatar.com/avatars/${uuid}`,
+            name,
+            0x00ff00,
+            player
+          );
+        } else if (!currentNames.has(name)) {
+          notifyPlayer(
+            "Logged Out",
+            `https://crafatar.com/avatars/${uuid}`,
+            name,
+            0xff0000,
+            player
+          );
+        }
       }
     }
   }
-  await save(PERSISTENT_FILE, currentList);
+  await save("bounty", PERSISTENT_FILE, currentList);
 }
 
 export async function pollBounty(): Promise<void> {
@@ -111,5 +105,12 @@ export async function pollBounty(): Promise<void> {
     return;
   }
   debug(result.data);
-  return checkPlayerDifferences(result.data.players);
+  await checkPlayerDifferences(result.data.players);
+}
+
+export async function watch(): Promise<never> {
+  for (;;) {
+    await pollBounty();
+    await delay(config.bounty.interval);
+  }
 }

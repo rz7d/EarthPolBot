@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from "axios";
+import config from "../config.json";
 
 export interface vec2 {
   x: number;
@@ -21,7 +22,7 @@ export async function get<T>(url: string): Promise<AxiosResponse<T> | null> {
   try {
     return await axios({
       method: "GET",
-      url: url,
+      url,
       headers: {
         "Content-Type": "application/json",
         "User-Agent":
@@ -34,13 +35,8 @@ export async function get<T>(url: string): Promise<AxiosResponse<T> | null> {
   }
 }
 
-export function setOf<T>(a: T[], b: T[]): Set<T> {
-  const set = new Set<T>();
-  a.forEach((e) => set.add(e));
-  b.forEach((e) => set.add(e));
-  return set;
-}
-
 export function debug(message: any) {
-  // console.debug(message);
+  if (config.log.debug) {
+    console.debug(message);
+  }
 }

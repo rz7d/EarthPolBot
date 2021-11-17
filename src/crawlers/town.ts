@@ -1,16 +1,21 @@
-import {
-  debug,
-  get,
-  NamedCoordDictionary,
-  NamedCoordInfo,
-  vec2,
-} from "../core";
-import { log } from "../log";
+import { debug, delay, get, NamedCoordInfo, vec2 } from "../core";
+import log from "../log";
 import { sendEmbed } from "../discord";
-import { load, save } from "../presistent";
+import { load, save } from "../persistent";
+import * as config from "../../config.json";
 
 const ENDPOINT = "https://earthpol.com/altmap/tiles/world/markers.json";
 const PRESISTENT_FILE = "towns.json";
+
+interface Marker {
+  tooltip_anchor: vec2;
+  size: vec2;
+  anchor: vec2;
+  tooltip: string;
+  icon: string;
+  type: string;
+  point: vec2; // location of town
+}
 
 interface MarkerCollection {
   hide: boolean;
@@ -23,16 +28,6 @@ interface MarkerCollection {
   timestamp: number;
 }
 
-interface Marker {
-  tooltip_anchor: vec2;
-  size: vec2;
-  anchor: vec2;
-  tooltip: string;
-  icon: string;
-  type: string;
-  point: vec2; // location of town
-}
-
 type TownInfo = NamedCoordInfo;
 
 // ^\s*"tooltip"\s*:\s*"(\\r\\n\\u003cdiv\\u003e\\r\\n    \\u003cbold\\u003e(?<townname>.+)\\u003c\/bold\\u003e\\r\\n\\u003c\/div\\u003e\\r\\n)",$
@@ -42,7 +37,7 @@ function tooltipToName(tooltip: string): string {
     .replaceAll("\u003c/bold\u003e\r\n\u003c/div\u003e\r\n", "");
 }
 
-async function notifyCoord(
+function notifyCoord(
   title: string,
   description: string,
   color: number,
@@ -71,13 +66,16 @@ async function notifyCoord(
 }
 
 async function checkTownDifferences(currentList: TownInfo[]) {
-  const previousList = await load<TownInfo[]>(PRESISTENT_FILE);
+  const previousList = await load<TownInfo[]>("town", PRESISTENT_FILE);
   if (previousList) {
-    const previousDict: NamedCoordDictionary = {};
-    const currentDict: NamedCoordDictionary = {};
-    currentList?.forEach(({ name, x, z }) => (currentDict[name] = { x, z }));
-    previousList?.forEach(({ name, x, z }) => (previousDict[name] = { x, z }));
-
+    const currentNames = currentList?.reduce<Set<string>>(
+      (set, { name }) => set.add(name),
+      new Set()
+    );
+    const previousNames = previousList?.reduce<Set<string>>(
+      (set, { name }) => set.add(name),
+      new Set()
+    );
     const all = previousList
       .concat(currentList)
       .sort((a, b) =>
@@ -87,19 +85,33 @@ async function checkTownDifferences(currentList: TownInfo[]) {
             ((BigInt(b.x) + BigInt(30000000)) * BigInt(60000000) + BigInt(b.z))
         )
       );
+
+    const sameSize = previousList.length === currentList.length;
+
     // rename = 2 towns on same position in same tick
     const renamed = new Set<string>();
+    let listsAreNotChanged = true;
+
+    // eslint-disable-next-line no-plusplus
     for (let i = 1; i < all.length; ++i) {
       const a = all[i - 1];
       const b = all[i];
 
+      // eslint-disable-next-line no-bitwise
+      if (sameSize && (i & 1) === 1) {
+        // (0, 1), (2, 3), (4, 5), ...
+        // if not changed, list entries are [a, a, b, b, c, c, ...]
+        // but changed, list entries are [a, a', b, b', c, c', ...]
+        listsAreNotChanged &&= a.name === b.name && a.x === b.x && a.z === b.z;
+      }
+
       if (a.x === b.x && a.z === b.z && a.name !== b.name) {
-        const ordered = a.name in previousDict;
+        const ordered = previousNames.has(a.name);
         const { name: prev } = ordered ? a : b;
         const { name: next } = ordered ? b : a;
-        await notifyCoord(
+        notifyCoord(
           "Town Renamed",
-          `Town "${prev}" has been renamed to \"${next}\".`,
+          `Town "${prev}" has been renamed to "${next}".`,
           0xffff00,
           a
         );
@@ -108,29 +120,33 @@ async function checkTownDifferences(currentList: TownInfo[]) {
       }
     }
 
-    for (const town of all) {
-      const { name } = town;
-      if (renamed.has(name)) {
-        continue;
-      }
-      if (!(name in previousDict)) {
-        await notifyCoord(
-          "Town Created",
-          `Town "${name}" has been created.`,
-          0x00ff00,
-          town
-        );
-      } else if (!(name in currentDict)) {
-        await notifyCoord(
-          "Town Abandoned",
-          `Town "${name}" has been abandoned.`,
-          0xff0000,
-          town
-        );
-      }
+    if (listsAreNotChanged) {
+      // skip if not changed
+      return;
     }
+
+    all
+      .filter(({ name }) => !renamed.has(name))
+      .forEach(async (town) => {
+        const { name } = town;
+        if (!previousNames.has(name)) {
+          notifyCoord(
+            "Town Created",
+            `Town "${name}" has been created.`,
+            0x00ff00,
+            town
+          );
+        } else if (!currentNames.has(name)) {
+          notifyCoord(
+            "Town Abandoned",
+            `Town "${name}" has been abandoned.`,
+            0xff0000,
+            town
+          );
+        }
+      });
   }
-  await save(PRESISTENT_FILE, currentList);
+  await save("town", PRESISTENT_FILE, currentList);
 }
 
 export async function pollTown(): Promise<void> {
@@ -143,7 +159,7 @@ export async function pollTown(): Promise<void> {
   for (const collection of result.data) {
     if (collection.name === "Towny") {
       const { markers } = collection;
-      return await checkTownDifferences(
+      await checkTownDifferences(
         markers
           .filter((t) => t.point)
           .map<TownInfo>((town) => ({
@@ -152,6 +168,14 @@ export async function pollTown(): Promise<void> {
             z: town.point.z,
           }))
       );
+      break;
     }
+  }
+}
+
+export async function watch(): Promise<never> {
+  for (;;) {
+    await pollTown();
+    await delay(config.town.interval);
   }
 }

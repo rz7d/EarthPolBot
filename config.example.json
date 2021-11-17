@@ -1,12 +1,23 @@
 {
-  "interval": {
-    "town": 2000,
-    "bounty": 300
+  "discord": {
+    "resendDelay": 300,
+    "username": "EarthPol Bot",
+    "avatarUrl": "",
+    "webhooks": [""]
   },
-  "webhook": {
-    "discord": "webhook url here"
+  "persistentData": {
+    "town": true,
+    "bounty": true,
+    "log": true
   },
-  "bounty": ["jeb_", "Dinnerbone"],
-  "persistent": true,
-  "persistentLog": true
+  "log": {
+    "debug": false
+  },
+  "town": {
+    "interval": 1000
+  },
+  "bounty": {
+    "interval": 300,
+    "targets": ["jeb_", "Dinnerbone"]
+  }
 }

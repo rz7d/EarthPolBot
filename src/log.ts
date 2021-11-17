@@ -1,9 +1,11 @@
 import { promises } from "fs";
-import * as config from "../config.json";
+import { isPersistent } from "./persistent";
 
-export async function log(message: string): Promise<void> {
+async function log(message: string): Promise<void> {
   console.log(message);
-  if (config.persistentLog) {
-    return await promises.appendFile("log.txt", `${message}\n`);
+  if (isPersistent("log")) {
+    await promises.appendFile("log.txt", `${message}\n`);
   }
 }
+
+export default log;
