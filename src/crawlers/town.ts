@@ -48,8 +48,9 @@ async function notifyCoord(
   color: number,
   { x, z }: vec2
 ) {
-  await log(`${title}: ${description} ${x} ${z}`);
-  return await sendEmbed({
+  // no-await
+  log(`${title}: ${description} ${x} ${z}`);
+  sendEmbed({
     title,
     url: `https://earthpol.com/altmap/?zoom=8&x=${x}&z=${z}`,
     description,
@@ -135,6 +136,9 @@ async function checkTownDifferences(currentList: TownInfo[]) {
 export async function pollTown(): Promise<void> {
   console.log(`GET: ${ENDPOINT}`);
   const result = await get<MarkerCollection[]>(ENDPOINT);
+  if (!result) {
+    return;
+  }
   debug(result.data);
   for (const collection of result.data) {
     if (collection.name === "Towny") {

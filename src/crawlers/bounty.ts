@@ -41,8 +41,9 @@ async function notifyPlayer(
   color: number,
   { x, z }: vec2
 ) {
-  await log(`${title}: ${description} ${x} ${z}`);
-  return await sendEmbed({
+  // no-await
+  log(`${title}: ${description} ${x} ${z}`);
+  sendEmbed({
     title,
     url: `https://earthpol.com/altmap/?zoom=8&x=${x}&z=${z}`,
     thumbnail: {
@@ -106,6 +107,9 @@ async function checkPlayerDifferences(currentList: PlayerInfo[]) {
 export async function pollBounty(): Promise<void> {
   console.log(`GET: ${ENDPOINT}`);
   const result = await get<PlayerList>(ENDPOINT);
+  if (!result) {
+    return;
+  }
   debug(result.data);
   return checkPlayerDifferences(result.data.players);
 }
