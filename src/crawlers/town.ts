@@ -34,7 +34,8 @@ type TownInfo = NamedCoordInfo;
 function tooltipToName(tooltip: string): string {
   return tooltip
     .replaceAll("\r\n\u003cdiv\u003e\r\n    \u003cbold\u003e", "")
-    .replaceAll("\u003c/bold\u003e\r\n\u003c/div\u003e\r\n", "");
+    .replaceAll("\u003c/bold\u003e\r\n\u003c/div\u003e\r\n", "")
+    .trim();
 }
 
 function notifyCoord(
