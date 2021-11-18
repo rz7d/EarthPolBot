@@ -13,6 +13,15 @@ export function sendEmbed(embed: any) {
     })
   );
 }
+export function sendMessage(message: string) {
+  messageQueue.push(
+    JSON.stringify({
+      username: config.discord.username,
+      avatar_url: config.discord.avatarUrl,
+      content: message,
+    })
+  );
+}
 
 export async function watch() {
   for (;;) {

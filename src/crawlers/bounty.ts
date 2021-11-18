@@ -1,6 +1,6 @@
 import { debug, delay, get, NamedCoordInfo, vec2 } from "../core";
 import log from "../log";
-import { sendEmbed } from "../discord";
+import { sendEmbed, sendMessage } from "../discord";
 import { load, save } from "../persistent";
 import * as config from "../../config.json";
 
@@ -83,6 +83,12 @@ async function checkPlayerDifferences(currentList: PlayerInfo[]) {
             0x00ff00,
             player
           );
+          if (name in config.bounty.alert) {
+            const message = (config.bounty.alert as { [k: string]: string })[
+              name
+            ];
+            sendMessage(message);
+          }
         } else if (!currentNames.has(name)) {
           notifyPlayer(
             "Logged Out",
