@@ -26,20 +26,23 @@ export function sendMessage(message: string) {
 export async function watch() {
   for (;;) {
     await delay(config.discord.resendDelay);
-    const message = messageQueue.shift();
-    if (message) {
-      for (const webhookUrl of config.discord.webhooks) {
-        try {
-          await axios({
-            method: "POST",
-            url: webhookUrl,
-            headers: {
-              "Content-Type": "application/json",
-            },
-            data: message,
-          });
-        } catch (err) {
-          console.error(err);
+    if (messageQueue.length >= 1) {
+      const message = messageQueue[0];
+      if (message) {
+        for (const webhookUrl of config.discord.webhooks) {
+          try {
+            await axios({
+              method: "POST",
+              url: webhookUrl,
+              headers: {
+                "Content-Type": "application/json",
+              },
+              data: message,
+            });
+            messageQueue.shift();
+          } catch (err) {
+            console.error(err);
+          }
         }
       }
     }
