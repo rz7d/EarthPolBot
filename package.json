@@ -2,13 +2,16 @@
   "name": "earthpolbot",
   "private": true,
   "version": "1.0.0",
-  "main": "dist/app.js",
+  "main": "dist/src/main.js",
   "author": "azure",
   "license": "UNLICENCED",
   "contributors": [],
   "scripts": {
-    "start": "ts-node ./src/main.ts",
-    "pinglist": "ts-node ./src/pinglist.ts",
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
+    "start": "npx ts-node ./src/main.ts",
+    "start:production": "node ./dist/src/main.js",
+    "pinglist": "npx ts-node ./src/pinglist.ts",
     "lint": "eslint src --ext .ts --fix"
   },
   "devDependencies": {
