@@ -8,6 +8,7 @@
   "contributors": [],
   "scripts": {
     "start": "ts-node ./src/main.ts",
+    "pinglist": "ts-node ./src/pinglist.ts",
     "lint": "eslint src --ext .ts --fix"
   },
   "devDependencies": {

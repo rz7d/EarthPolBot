@@ -107,7 +107,7 @@ async function checkPlayerDifferences(currentList: PlayerInfo[]) {
 export async function pollBounty(): Promise<void> {
   console.log(`GET: ${ENDPOINT}`);
   const result = await get<PlayerList>(ENDPOINT);
-  if (!result) {
+  if (!result || !result.data || !result.data.players) {
     return;
   }
   debug(result.data);
