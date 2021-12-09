@@ -11,7 +11,6 @@
     "clean": "tsc --build --clean",
     "start": "npx ts-node ./src/main.ts",
     "start:production": "node ./dist/src/main.js",
-    "pinglist": "npx ts-node ./src/pinglist.ts",
     "lint": "eslint src --ext .ts --fix"
   },
   "devDependencies": {
